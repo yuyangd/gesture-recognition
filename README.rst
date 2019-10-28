@@ -38,6 +38,12 @@ Also install Redis server:
 ::
 
    apt-get install redis-server
+   brew install redis
+
+Run Redis
+::
+
+   redis-server /usr/local/etc/redis.conf
 
 Now go ahead and grab the source code repo:
 ::

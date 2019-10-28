@@ -5,7 +5,7 @@ Usage:
 """
 
 import os
-import StringIO
+from io import BytesIO
 import sys
 import time
 
@@ -23,7 +23,7 @@ height = None if len(sys.argv) <= 2 else int(sys.argv[2])
 max_sleep = 5.0
 cur_sleep = 0.1
 while True:
-    cap = cv2.VideoCapture(-1)
+    cap = cv2.VideoCapture(0)
     if cap.isOpened():
         break
     print('not opened, sleeping {}s'.format(cur_sleep))
@@ -53,7 +53,7 @@ while True:
         time.sleep(0.5)
         continue
     hello, image = cv2.imencode('.jpg', image)
-    sio = StringIO.StringIO()
+    sio = BytesIO()
     np.save(sio, image)
     value = sio.getvalue()
     store.set('image', value)

@@ -5,7 +5,7 @@ Usage:
 """
 
 import base64
-import StringIO
+from io import BytesIO
 import time
 
 import coils
@@ -42,7 +42,7 @@ class SocketHandler(websocket.WebSocketHandler):
                 break
         self._prev_image_id = image_id
         image = self._store.get('image')
-        image = StringIO.StringIO(image)
+        image = BytesIO(image)
         image = np.load(image)
         image = base64.b64encode(image)
         self.write_message(image)
