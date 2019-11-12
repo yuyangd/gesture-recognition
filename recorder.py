@@ -16,8 +16,10 @@ import redis
 
 
 # Retrieve command line arguments.
-width = None if len(sys.argv) <= 1 else int(sys.argv[1])
-height = None if len(sys.argv) <= 2 else int(sys.argv[2])
+# width = None if len(sys.argv) <= 1 else int(sys.argv[1])
+# height = None if len(sys.argv) <= 2 else int(sys.argv[2])
+width = 224
+height = 224
 
 # Create video capture object, retrying until successful.
 max_sleep = 5.0

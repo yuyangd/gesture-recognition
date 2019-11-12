@@ -12,7 +12,12 @@ import coils
 import numpy as np
 import redis
 from tornado import websocket, web, ioloop
+import torch
+import torchvision
 
+import torchvision.transforms as transforms
+import torch.nn.functional as F
+import PIL.Image
 
 MAX_FPS = 100
 
@@ -30,7 +35,11 @@ class SocketHandler(websocket.WebSocketHandler):
         self._store = redis.Redis()
         self._fps = coils.RateTicker((1, 5, 10))
         self._prev_image_id = None
+        self.mean = torch.Tensor([0.485, 0.456, 0.406]).cpu()
+        self.std = torch.Tensor([0.229, 0.224, 0.225]).cpu()
 
+    # def eval_model(self, img):
+        
     def on_message(self, message):
         """ Retrieve image ID from database until different from last ID,
         then retrieve image, de-serialize, encode and send to client. """
@@ -43,8 +52,10 @@ class SocketHandler(websocket.WebSocketHandler):
         self._prev_image_id = image_id
         image = self._store.get('image')
         image = BytesIO(image)
-        image = np.load(image)
+        image = np.load(image) #
         image = base64.b64encode(image)
+        # pred = self.eval_model(image)
+        # print(pred)
         self.write_message(image)
 
         # Print object ID and the framerate.

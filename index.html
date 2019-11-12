@@ -14,8 +14,10 @@
                ws.send(1);
             };
             ws.onmessage = function (msg) {
+               
                $("#cam").attr('src', 'data:image/jpg;base64,' + msg.data);
-               ws.send(1);
+               // document.getElementById("pred").innerHTML = "helloworld <br>";
+               // ws.send(1);
             };
             ws.onerror = function (e) {
                console.log(e);
@@ -29,5 +31,6 @@
   </head>
   <body>
     <img id="cam" src=""/>
+    <div id="pred"></div>
   </body>
 </html> 
