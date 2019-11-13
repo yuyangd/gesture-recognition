@@ -16,7 +16,7 @@ pycodestyle==2.5.0
 pycosat==0.6.3
 python-dateutil==2.7.3
 redis==3.3.11
-requests==2.19.1
+requests==2.20.0
 ruamel.yaml==0.15.71
 s3transfer==0.1.13
 simple-http-server==0.1.7
