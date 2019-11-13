@@ -1,0 +1,86 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>Webcam over WebSocket using OpenCV and Tornado</title>
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+</head>
+
+<body>
+  <video src="" id="video" style="width:680px;height:320px;" autoplay="true"></video>
+  <canvas style="display:none;" id="preview"></canvas>
+  <div id="logger"></div>
+
+  <script type="text/javascript" charset="utf-8">
+    console.log('Hey Yo...');
+
+    var ws;
+
+    if ("WebSocket" in window) {
+      var ws_path = 'ws://' + window.location.host + window.location.pathname + 'ws';
+      //alert(ws_path);
+      ws = new WebSocket(ws_path);
+      //alert(ws);
+      ws.onopen = function () {
+        ws.send(1);
+      };
+      ws.onmessage = function (msg) {
+        const data = JSON.parse(msg.data);
+        console.log('got message data', data);
+      };
+      ws.onerror = function (e) {
+        console.log(e);
+        ws.send('Error :(');
+      };
+    } else {
+      logger("WebSocket not supported");
+    }
+
+    var canvas = document.getElementById("preview");
+    var context = canvas.getContext("2d");
+
+    canvas.width = 320;
+    canvas.height = 240;
+    context.width = canvas.width;
+    context.height = canvas.height;
+    var video = document.getElementById("video");
+
+    function logger(msg) {
+      document.getElementById('logger').innerText = msg;
+    }
+    function loadCam(stream) {
+      video.srcObject = stream;
+      logger('Camara connected [OK]');
+    }
+
+    function loadFail() {
+      logger('Camara disconnected');
+    }
+
+    function viewVideo(video, context, websocket) {
+      context.drawImage(video, 0, 0, context.width, context.height);
+      // to transmit images as a string, webp is a format similar to png
+      //socket.emit('stream',canvas.toDataURL('image/webp'));
+      var imageData = canvas.toDataURL('image/webp');
+      websocket.send(imageData);
+      // console.log('image data', imageData);
+    }
+
+    window.onload = () => {
+
+      if (ws) {
+        navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msgGetUserMedia);
+        if (navigator.getUserMedia) {
+          navigator.getUserMedia({ video: true }, loadCam, loadFail);
+        }
+        setInterval(function () {
+          viewVideo(video, context, ws);
+        }, 120);
+      }
+
+    }
+  </script>
+
+</body>
+
+</html>

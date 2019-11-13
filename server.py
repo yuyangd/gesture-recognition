@@ -23,7 +23,7 @@ MAX_FPS = 100
 
 class IndexHandler(web.RequestHandler):
     def get(self):
-        self.render('index.html')
+        self.render('index-video.html')
 
 class SocketHandler(websocket.WebSocketHandler):
     """ Handler for websocket queries. """
@@ -41,24 +41,27 @@ class SocketHandler(websocket.WebSocketHandler):
     # def eval_model(self, img):
         
     def on_message(self, message):
+        print('receive message' + message)
         """ Retrieve image ID from database until different from last ID,
         then retrieve image, de-serialize, encode and send to client. """
 
-        while True:
-            time.sleep(1./MAX_FPS)
-            image_id = self._store.get('image_id')
-            if image_id != self._prev_image_id:
-                break
-        self._prev_image_id = image_id
-        image = self._store.get('image')
-        image = BytesIO(image)
-        image = np.load(image) #
-        image = base64.b64encode(image).decode('utf-8')
-        # pred = self.eval_model(image)
-        # print(pred)
+        # while True:
+        #     time.sleep(1./MAX_FPS)
+        #     image_id = self._store.get('image_id')
+        #     if image_id != self._prev_image_id:
+        #         break
+        # self._prev_image_id = image_id
+        # image = self._store.get('image')
+        # image = BytesIO(image)
+        # image = np.load(image) #
+        # image = base64.b64encode(image).decode('utf-8')
+        # # pred = self.eval_model(image)
+        # # print(pred)
+
+
+        """ TODO: message is currently a webp image format url, analyse and return result """
 
         response = {
-          "image": image,
           "text": "Hello world"
         }
 
