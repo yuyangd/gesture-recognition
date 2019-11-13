@@ -53,10 +53,16 @@ class SocketHandler(websocket.WebSocketHandler):
         image = self._store.get('image')
         image = BytesIO(image)
         image = np.load(image) #
-        image = base64.b64encode(image)
+        image = base64.b64encode(image).decode('utf-8')
         # pred = self.eval_model(image)
         # print(pred)
-        self.write_message(image)
+
+        response = {
+          "image": image,
+          "text": "Hello world"
+        }
+
+        self.write_message(response)
 
         # Print object ID and the framerate.
         text = '{} {:.2f}, {:.2f}, {:.2f} fps'.format(id(self), *self._fps.tick())

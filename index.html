@@ -14,8 +14,10 @@
                ws.send(1);
             };
             ws.onmessage = function (msg) {
+               data = JSON.parse(msg.data);
                
-               $("#cam").attr('src', 'data:image/jpg;base64,' + msg.data);
+               $("#cam").attr('src', 'data:image/jpg;base64,' + data.image);
+               $("#pred").text(data.text);
                // document.getElementById("pred").innerHTML = "helloworld <br>";
                ws.send(1);
             };
