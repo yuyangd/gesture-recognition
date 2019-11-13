@@ -17,7 +17,7 @@
                
                $("#cam").attr('src', 'data:image/jpg;base64,' + msg.data);
                // document.getElementById("pred").innerHTML = "helloworld <br>";
-               // ws.send(1);
+               ws.send(1);
             };
             ws.onerror = function (e) {
                console.log(e);
