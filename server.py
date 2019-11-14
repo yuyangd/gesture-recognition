@@ -19,7 +19,8 @@ import torchvision.transforms as transforms
 from torchvision.transforms import ToTensor
 import torch.nn.functional as F
 
-MAX_FPS = 100
+mean = torch.Tensor([0.485, 0.456, 0.406]).cpu()
+std = torch.Tensor([0.229, 0.224, 0.225]).cpu()
 
 class IndexHandler(web.RequestHandler):
     def get(self):
@@ -59,18 +60,22 @@ class SocketHandler(websocket.WebSocketHandler):
 
     def getImgModel(self, img_tensor):
         try:
-            return self.model(img_tensor)
+            img_tensor.sub_(mean[:, None, None]).div_(std[:, None, None])
+            return self.model(img_tensor[None, ...])
+            #return self.model(img_tensor)
         except:
             return None
 
     def on_message(self, message):
         image = self.getImgFromBase64(message)
-        if image:
-            image_tensor = ToTensor()(image).unsqueeze(0)
-            
+        if image is not None:
+            # image_tensor = ToTensor()(image).unsqueeze(0)
+            image_tensor = transforms.functional.to_tensor(image).to(torch.device('cpu'))
             img_model = self.getImgModel(image_tensor)
             if img_model is not None:
-                output = F.softmax(img_model, dim=1).detach().cpu().numpy().flatten()
+                print("image model")
+                # torch.no_grad()
+                output = F.softmax(img_model, dim=1).detach().cpu().numpy().flatten() # TODO dim=0?
                 print(output)
                 category_index = output.argmax()
 
@@ -78,10 +83,12 @@ class SocketHandler(websocket.WebSocketHandler):
                     "move": self.getMove(category_index)
                 }
             else:
+                print("nothing here 1")
                 response = {
                     "move": "nothing"
                 }
         else:
+            print("nothing here 2")
             response = {
                 "move": "nothing"
             }
