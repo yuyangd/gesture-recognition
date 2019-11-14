@@ -11,10 +11,18 @@
   <canvas style="display:none;" id="preview"></canvas>
   <div id="logger"></div>
 
+  <h3 id="moveName">Make your move...</h3>
+  <img id="moveImage" src="https://media.giphy.com/media/5AtXMjjrTMwvK/giphy.gif" width="200" height="200" />
+
+
+
   <script type="text/javascript" charset="utf-8">
     console.log('Hey Yo...');
 
     var ws;
+    var detectMove = true;
+    var moveName = document.getElementById('moveName');
+    var moveImage = document.getElementById('moveImage');
 
     if ("WebSocket" in window) {
       var ws_path = 'ws://' + window.location.host + window.location.pathname + 'ws';
@@ -27,6 +35,16 @@
       ws.onmessage = function (msg) {
         const data = JSON.parse(msg.data);
         console.log('got message data', data);
+
+        if (!detectMove) {
+          return;
+        }
+
+        if (data.move !== 'nothing') {
+          detectMove = false;
+          moveImage.src = data.image;
+          moveName.innerText = 'You\'re a ' + data.move + '!';
+        }
       };
       ws.onerror = function (e) {
         console.log(e);
@@ -61,6 +79,11 @@
       context.drawImage(video, 0, 0, context.width, context.height);
       // to transmit images as a string, webp is a format similar to png
       //socket.emit('stream',canvas.toDataURL('image/webp'));
+
+      if (!detectMove) {
+        return;
+      }
+
       var imageData = canvas.toDataURL('image/webp');
       websocket.send(imageData);
       // console.log('image data', imageData);

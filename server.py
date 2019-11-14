@@ -27,6 +27,8 @@ class IndexHandler(web.RequestHandler):
 
 class SocketHandler(websocket.WebSocketHandler):
     """ Handler for websocket queries. """
+
+    imageCount = 1
     
     def __init__(self, *args, **kwargs):
         """ Initialize the Redis store and framerate monitor. """
@@ -41,7 +43,7 @@ class SocketHandler(websocket.WebSocketHandler):
     # def eval_model(self, img):
         
     def on_message(self, message):
-        print('receive message' + message)
+        # print('receive message' + message)
         """ Retrieve image ID from database until different from last ID,
         then retrieve image, de-serialize, encode and send to client. """
 
@@ -61,8 +63,17 @@ class SocketHandler(websocket.WebSocketHandler):
 
         """ TODO: message is currently a webp image format url, analyse and return result """
 
+        self.imageCount = self.imageCount + 1
+
+        move = "nothing"
+        if self.imageCount >= 30:
+          move = "cowboy"
+        
         response = {
-          "text": "Hello world"
+          "text": "Hello world",
+          "move": move,
+          "image": message,
+          "imageCount": self.imageCount
         }
 
         self.write_message(response)
