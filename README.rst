@@ -2,9 +2,7 @@ Gesture Recognition
 ===============
 
 Webcam over websocket in Python, inspired from https://github.com/vmlaker/hello-websocket
-
-.. image:: https://github.com/vmlaker/hello-websocket/blob/master/diagram.png?raw=true
-
+Gesture Recognition for ["cowboy","ninja", "bear"]
 
 Installation
 ------------
@@ -14,17 +12,6 @@ Install opencv
    apt-get install python-opencv
    brew install opencv
 
-Also install Redis server:
-::
-
-   apt-get install redis-server
-   brew install redis
-
-Run Redis
-::
-
-   redis-server /usr/local/etc/redis.conf
-
 Now create virtualenv
 ::
    virtualenv venv
@@ -32,11 +19,6 @@ Now create virtualenv
 
 Usage
 -----
-
-First run the *recorder*:
-::
-
-   python recorder.py
 
 Now (in a different shell) run the *server*:
 ::

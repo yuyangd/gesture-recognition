@@ -1,7 +1,7 @@
 ##############################################
 #
 #  Makefile to install Python in virtualenv
-#  with all dependencies for hello-websocket.
+#  with all dependencies
 #
 ##############################################
 
@@ -21,10 +21,6 @@ venv: requirements.txt
 
 test: $(VENV_CV2)
 	. venv/bin/activate && python -c 'import cv2; print(cv2)'
-
-recorder: venv
-	test -d venv || virtualenv venv
-	. venv/bin/activate && python recorder.py
 
 server: venv
 	test -d venv || virtualenv venv
