@@ -1,5 +1,5 @@
 """
-Serve webcam images from a Redis store using Tornado.
+Serve webcam and process image through ML model.
 Usage:
    python server.py
 """
@@ -8,7 +8,6 @@ import base64
 import re
 from io import BytesIO
 from PIL import Image
-import time
 
 import numpy as np
 from tornado import websocket, web, ioloop
@@ -69,7 +68,6 @@ class SocketHandler(websocket.WebSocketHandler):
     def on_message(self, message):
         image = self.getImgFromBase64(message)
         if image is not None:
-            # image_tensor = ToTensor()(image).unsqueeze(0)
             image_tensor = transforms.functional.to_tensor(image).to(torch.device('cpu'))
             img_model = self.getImgModel(image_tensor)
             if img_model is not None:
@@ -83,12 +81,12 @@ class SocketHandler(websocket.WebSocketHandler):
                     "move": self.getMove(category_index)
                 }
             else:
-                print("nothing here 1")
+                print("Image model is none")
                 response = {
                     "move": "nothing"
                 }
         else:
-            print("nothing here 2")
+            print("Image is none")
             response = {
                 "move": "nothing"
             }
