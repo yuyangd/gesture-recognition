@@ -78,7 +78,8 @@ class SocketHandler(websocket.WebSocketHandler):
                 category_index = output.argmax()
 
                 response = {
-                    "move": self.getMove(category_index)
+                    "move": self.getMove(category_index),
+                    "image": message
                 }
             else:
                 print("Image model is none")

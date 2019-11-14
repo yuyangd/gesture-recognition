@@ -4,12 +4,30 @@
 <head>
   <title>Webcam over WebSocket using OpenCV and Tornado</title>
   <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/socket.io-client@2/dist/socket.io.js"></script>
 </head>
 
 <body>
   <video src="" id="video" style="width:224px;height:224px;" autoplay="true"></video>
   <canvas style="display:none;" id="preview"></canvas>
   <div id="logger"></div>
+
+  <fieldset>
+    <legend>CNB integration</legend>
+    <fieldset>
+      <label for="cnbPlayerName">Player name</label>
+      <input id="cnbPlayerName" type="text" maxlength="20" value="Andy" />
+    </fieldset>
+    <button id="cnbFindPlayer" type="button" onclick="testPlayGame">FIND PLAYER</button>
+
+    <div id="cnbPlayerMatchups" style="display: none;">
+      <h4>Your matchups in progress...</h4>
+      <ul id="cnbPlayerMatchupList">
+      </ul>
+    </div>
+
+    <div id="cnbSelectedMatchupId"></div>
+  </fieldset>
 
   <h3 id="moveName">Make your move...</h3>
   <img id="moveImage" src="https://media.giphy.com/media/5AtXMjjrTMwvK/giphy.gif" width="200" height="200" />
@@ -20,9 +38,50 @@
     console.log('Hey Yo...');
 
     var ws;
-    var detectMove = true;
+    var detectMove = false;
     var moveName = document.getElementById('moveName');
     var moveImage = document.getElementById('moveImage');
+
+    var cnbMatchupsSocket = io('http://cnb.finx-rocks.com/matchups-realz');
+    var cnbPlayersSocket = io('http://cnb.finx-rocks.com/players-realz');
+
+    var cnbPlayerMatchupList = document.getElementById('cnbPlayerMatchupList');
+
+    var cnbSelectedMatchup;
+    var cnbSelectedTeam;
+
+    cnbMatchupsSocket.on('MATCHUPS_FOR_PLAYER_UPDATE', function (matchups) {
+      console.log('GOT MATCHUPS', matchups);
+      const teamName = document.getElementById('cnbPlayerName').value;
+      const playerId = teamName.toLowerCase();
+      const matchupsForPlayer = matchups[playerId];
+
+      if (!matchupsForPlayer) {
+        document.getElementById('cnbPlayerMatchups').style.display = 'none';
+        return;
+      }
+
+      const inProgressMatchups = matchupsForPlayer.filter(mu => mu.gameInProgress && mu.gameInProgress.status === "WaitingPlayerMoves");
+      if (inProgressMatchups.length) {
+        document.getElementById('cnbPlayerMatchups').style.display = 'block';
+
+        inProgressMatchups.forEach(mu => {
+          const listItem = document.createElement('li');
+          const button = document.createElement('button');
+
+          button.innerText = mu.teams[0].name + ' vs ' + mu.teams[1].name;
+          button.onclick = () => {
+            cnbSelectedMatchup = mu;
+            cnbSelectedTeam = mu.teams.filter(t => t.id.split('-')[2] === playerId)[0];
+            document.getElementById('cnbSelectedMatchupId').innerText = mu.id;
+            detectMove = true;
+          }
+
+          listItem.appendChild(button);
+          cnbPlayerMatchupList.appendChild(listItem);
+        })
+      }
+    })
 
     if ("WebSocket" in window) {
       var ws_path = 'ws://' + window.location.host + window.location.pathname + 'ws';
@@ -34,7 +93,7 @@
       };
       ws.onmessage = function (msg) {
         const data = JSON.parse(msg.data);
-        console.log('got message data', data);
+        //console.log('got message data', data);
 
         if (!detectMove) {
           return;
@@ -44,6 +103,16 @@
           detectMove = false;
           moveImage.src = data.image;
           moveName.innerText = 'You\'re a ' + data.move + '!';
+
+          const move = {
+            playerId: document.getElementById('cnbPlayerName').value.toLowerCase(),
+            moveId: 'A',
+            powerUpId: 'NONE'
+          }
+
+          console.log('TRY TO EMIT', cnbSelectedMatchup, cnbSelectedTeam, move);
+
+          cnbMatchupsSocket.emit('MAVE_MOVE_FOR_MATCHUP', cnbSelectedMatchup.id, cnbSelectedTeam.id, move)
         }
       };
       ws.onerror = function (e) {
@@ -52,6 +121,11 @@
       };
     } else {
       logger("WebSocket not supported");
+    }
+
+    document.getElementById('cnbFindPlayer').onclick = function testPlayGame() {
+      const playerId = document.getElementById('cnbPlayerName').value.toLowerCase();
+      cnbMatchupsSocket.emit('SUBSCRIBE_TO_MATCHUPS_FOR_PLAYER', playerId);
     }
 
     var canvas = document.getElementById("preview");
