@@ -5,19 +5,19 @@ Usage:
 """
 
 import base64
+import re
 from io import BytesIO
+from PIL import Image
 import time
 
-import coils
 import numpy as np
-import redis
 from tornado import websocket, web, ioloop
 import torch
 import torchvision
 
 import torchvision.transforms as transforms
+from torchvision.transforms import ToTensor
 import torch.nn.functional as F
-import PIL.Image
 
 MAX_FPS = 100
 
@@ -27,60 +27,66 @@ class IndexHandler(web.RequestHandler):
 
 class SocketHandler(websocket.WebSocketHandler):
     """ Handler for websocket queries. """
-
-    imageCount = 1
     
     def __init__(self, *args, **kwargs):
         """ Initialize the Redis store and framerate monitor. """
 
         super(SocketHandler, self).__init__(*args, **kwargs)
-        self._store = redis.Redis()
-        self._fps = coils.RateTicker((1, 5, 10))
-        self._prev_image_id = None
-        self.mean = torch.Tensor([0.485, 0.456, 0.406]).cpu()
-        self.std = torch.Tensor([0.229, 0.224, 0.225]).cpu()
+        self.load_model()
 
-    # def eval_model(self, img):
-        
+    def load_model(self):
+        self.model = torchvision.models.resnet18()
+
+        self.model.fc = torch.nn.Linear(512, 3)
+
+        self.model.load_state_dict(torch.load('my_model_v2.pth', map_location=torch.device('cpu')))
+        self.model.eval()
+
+
+    def getImgFromBase64(self, codec):
+        try:
+            base64_data = re.sub('^data:image/.+;base64,', '', codec)
+            byte_data = base64.b64decode(base64_data)
+            image_data = BytesIO(byte_data)
+            image = Image.open(image_data)
+            return image
+        except:
+            return None
+
+    def getMove(self, index):
+        moves = ["cowboy","ninja", "bear"]
+        return moves[index]
+
+    def getImgModel(self, img_tensor):
+        try:
+            return self.model(img_tensor)
+        except:
+            return None
+
     def on_message(self, message):
-        # print('receive message' + message)
-        """ Retrieve image ID from database until different from last ID,
-        then retrieve image, de-serialize, encode and send to client. """
+        image = self.getImgFromBase64(message)
+        if image:
+            image_tensor = ToTensor()(image).unsqueeze(0)
+            
+            img_model = self.getImgModel(image_tensor)
+            if img_model is not None:
+                output = F.softmax(img_model, dim=1).detach().cpu().numpy().flatten()
+                print(output)
+                category_index = output.argmax()
 
-        # while True:
-        #     time.sleep(1./MAX_FPS)
-        #     image_id = self._store.get('image_id')
-        #     if image_id != self._prev_image_id:
-        #         break
-        # self._prev_image_id = image_id
-        # image = self._store.get('image')
-        # image = BytesIO(image)
-        # image = np.load(image) #
-        # image = base64.b64encode(image).decode('utf-8')
-        # # pred = self.eval_model(image)
-        # # print(pred)
-
-
-        """ TODO: message is currently a webp image format url, analyse and return result """
-
-        self.imageCount = self.imageCount + 1
-
-        move = "nothing"
-        if self.imageCount >= 30:
-          move = "cowboy"
-        
-        response = {
-          "text": "Hello world",
-          "move": move,
-          "image": message,
-          "imageCount": self.imageCount
-        }
+                response = {
+                    "move": self.getMove(category_index)
+                }
+            else:
+                response = {
+                    "move": "nothing"
+                }
+        else:
+            response = {
+                "move": "nothing"
+            }
 
         self.write_message(response)
-
-        # Print object ID and the framerate.
-        text = '{} {:.2f}, {:.2f}, {:.2f} fps'.format(id(self), *self._fps.tick())
-        print(text)
 
 app = web.Application([
     (r'/', IndexHandler),
