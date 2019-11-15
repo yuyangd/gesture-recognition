@@ -56,6 +56,8 @@
       'bear': 'C'
     };
 
+    var allPlayerMatchups = {};
+
     // UI ELEMENTS
     var moveName = document.getElementById('moveName');
     var moveImage = document.getElementById('moveImage');
@@ -103,7 +105,12 @@
 
     cnbMatchupsSocket.on('MATCHUPS_FOR_PLAYER_UPDATE', function (matchups) {
       console.log('GOT MATCHUPS', matchups);
-      const matchupsForPlayer = matchups[cnbSelectedPlayer.id];
+      allPlayerMatchups = {
+        ...allPlayerMatchups,
+        ...matchups
+      }
+
+      const matchupsForPlayer = allPlayerMatchups[cnbSelectedPlayer.id];
 
       while (cnbPlayerMatchupList.firstChild) {
         cnbPlayerMatchupList.removeChild(cnbPlayerMatchupList.firstChild);
@@ -168,7 +175,7 @@
           }
 
 
-          if (detectCount === 30) {
+          if (detectCount === 10) {
             // TODO: make move!
             detectMove = false;
             const move = {
@@ -250,7 +257,7 @@
         }
         setInterval(function () {
           viewVideo(video, context, ws);
-        }, 120);
+        }, 200);
       }
 
     }
