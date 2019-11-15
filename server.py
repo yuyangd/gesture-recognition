@@ -59,7 +59,7 @@ class SocketHandler(websocket.WebSocketHandler):
             return None
 
     def getMove(self, index):
-        moves = ["cowboy","ninja", "bear"]
+        moves = ["cowboy","ninja", "bear", "nothing"]
         return moves[index]
 
     def getImgModel(self, img_tensor):
