@@ -42,7 +42,7 @@ class SocketHandler(websocket.WebSocketHandler):
     def load_model(self):
         self.model = torchvision.models.resnet18()
 
-        self.model.fc = torch.nn.Linear(512, 3)
+        self.model.fc = torch.nn.Linear(512, 4)
 
         self.model.load_state_dict(torch.load('my_model_v2.pth', map_location=torch.device('cpu')))
         self.model.eval()
