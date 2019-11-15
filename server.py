@@ -25,6 +25,11 @@ class IndexHandler(web.RequestHandler):
     def get(self):
         self.render('index-video.html')
 
+class GameHandler(web.RequestHandler):
+    def get(self):
+        self.render('index-game.html')
+
+
 class SocketHandler(websocket.WebSocketHandler):
     """ Handler for websocket queries. """
     
@@ -71,7 +76,7 @@ class SocketHandler(websocket.WebSocketHandler):
             image_tensor = transforms.functional.to_tensor(image).to(torch.device('cpu'))
             img_model = self.getImgModel(image_tensor)
             if img_model is not None:
-                print("image model")
+                # print("image model")
                 # torch.no_grad()
                 output = F.softmax(img_model, dim=1).detach().cpu().numpy().flatten() # TODO dim=0?
                 print(output)
@@ -97,6 +102,7 @@ class SocketHandler(websocket.WebSocketHandler):
 app = web.Application([
     (r'/', IndexHandler),
     (r'/ws', SocketHandler),
+    (r'/game', GameHandler),
 ])
 
 if __name__ == '__main__':
