@@ -44,7 +44,7 @@ class SocketHandler(websocket.WebSocketHandler):
 
         self.model.fc = torch.nn.Linear(512, 4)
 
-        self.model.load_state_dict(torch.load('my_model_v2.pth', map_location=torch.device('cpu')))
+        self.model.load_state_dict(torch.load('my_model_v3.pth', map_location=torch.device('cpu')))
         self.model.eval()
 
 
