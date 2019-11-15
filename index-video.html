@@ -43,12 +43,11 @@
           return;
         }
 
-        if (data.move !== 'nothing' && data.move !== previousMove) {
+        if (data.move !== previousMove) {
           previousMove = data.move;
           // detectMove = false;
           // moveImage.src = data.image;
           moveName.innerText = 'You\'re a ' + data.move + '!';
-
           switch (data.move) {
             case 'ninja':
               moveImage.src = 'https://media.giphy.com/media/3ohzdSrzorjtwEWXrq/giphy.gif'
@@ -60,7 +59,7 @@
               moveImage.src = 'https://media.giphy.com/media/IdZ6XRY1C4fAZh3BMM/giphy.gif'
               break;
             default:
-              moveImage.src = 'https://media.giphy.com/media/5AtXMjjrTMwvK/giphy.gif'
+              moveImage.src = 'https://media.giphy.com/media/dwLKVwK43CYsJQedOP/giphy.gif'
           }
         }
       };
