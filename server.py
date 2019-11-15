@@ -44,7 +44,7 @@ class SocketHandler(websocket.WebSocketHandler):
 
         self.model.fc = torch.nn.Linear(512, 4)
 
-        self.model.load_state_dict(torch.load('my_model_v3.pth', map_location=torch.device('cpu')))
+        self.model.load_state_dict(torch.load('my_model_v7.pth', map_location=torch.device('cpu')))
         self.model.eval()
 
 
@@ -77,7 +77,7 @@ class SocketHandler(websocket.WebSocketHandler):
             img_model = self.getImgModel(image_tensor)
             if img_model is not None:
                 # print("image model")
-                # torch.no_grad()
+                torch.no_grad()
                 output = F.softmax(img_model, dim=1).detach().cpu().numpy().flatten() # TODO dim=0?
                 print(output)
                 category_index = output.argmax()
